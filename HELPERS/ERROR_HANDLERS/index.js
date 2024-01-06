@@ -5,47 +5,32 @@
 const errorHandler = (error, req, res, next) => {
     const response = {
         status: false,
+        errName: error.name,
+        message: error.message
     };
     switch (error.name) {
         case 'ValidationError': {
-            response.errName = error.name;
-            response.message = error.details[0].message;
-            res.status(422).send(response);
+            // response.message = error.details[0].message;
+            // res.status(422).send(response);
             break;
         }
         case 'JsonWebTokenError': {
-            response.errName = error.name;
-            response.message = error.message;
-            // logger.error(JSON.stringify(response));
-            res.status(422).send(response);
+            res.status(401).send(response);
             break;
         }
         case 'TypeError': {
-            response.errName = error.name;
-            response.message = error.message;
-            // logger.error(JSON.stringify(response));
-            res.status(422).send(response);
+            res.status(400).send(response);
             break;
         }
         case 'TokenExpiredError': {
-            response.errName = error.name;
-            response.message = error.message;
-            // logger.error(JSON.stringify(response));
-            res.status(422).send(response);
+            res.status(401).send(response);
             break;
         }
         case 'ReferenceError': {
-            response.errName = error.name;
-            response.message = error.message;
-            // logger.error(JSON.stringify(response));
             res.status(422).send(response);
-
             break;
         }
         default: {
-            response.errName = error.name;
-            response.message = error.message;
-            // logger.error(JSON.stringify(response));
             res.status(400).send(response);
         }
     }

@@ -1,4 +1,4 @@
-const { addToCartService, buyCartItemsService } = require("../SERVICE");
+const { addToCartService, buyCartItemsService, getAllCartItemsService } = require("../SERVICE");
 
 const addToCartController = async (req, res, next) => {
     try {
@@ -6,6 +6,17 @@ const addToCartController = async (req, res, next) => {
         const route = req.originalUrl;
         const productId = req.params.productid
         const { statusCode, payload } = await addToCartService(productId, route, user, method, accountType);
+        res.status(statusCode).send({ payload });
+    } catch (error) {
+        next(error);
+    }
+}
+
+const getAllCartItemsController = async (req, res, next) => {
+    try {
+        const { user, accountType, method } = req;
+        const route = req.originalUrl;
+        const { statusCode, payload } = await getAllCartItemsService(route, user, method, accountType);
         res.status(statusCode).send({ payload });
     } catch (error) {
         next(error);
@@ -24,4 +35,4 @@ const buyCartItemsController = async (req, res, next) => {
 }
 
 
-module.exports = { addToCartController, buyCartItemsController }
+module.exports = { addToCartController, getAllCartItemsController, buyCartItemsController }

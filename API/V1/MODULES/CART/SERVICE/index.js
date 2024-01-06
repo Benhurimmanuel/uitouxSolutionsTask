@@ -1,7 +1,9 @@
+const { default: mongoose } = require("mongoose");
 const { Cart } = require("../../../../../DB/SCHEMA/cart");
 const { Product } = require("../../../../../DB/SCHEMA/product");
 const { getSingleData, addData, getAllDataByCondition, getSingleDataById, updateSingleData, updateManyData, } = require("../../../../../DB/wrapper");
-const { SUCCESS_MESSAGE, PRODUCT_UNAVAILABLE, PRODUCT_OUT_OF_STOCK } = require("../../../CONSTANTS/httpConstants");
+const { SUCCESS_MESSAGE, PRODUCT_UNAVAILABLE, PRODUCT_OUT_OF_STOCK, UNSUCCESSFUL_MESSAGE } = require("../../../CONSTANTS/httpConstants");
+const { PENDING_PURCHASE, COMPLETED_PURCHASE } = require("../../../CONSTANTS/variables");
 const { generateLog } = require("../../../UTILS/loggerUtils");
 /*
  * @param {productId, route, user, method, accountType} string,string,string,string,string
@@ -18,7 +20,7 @@ const addToCartService = async (productId, route, user, method, accountType) => 
     // check if product is existing in users cart
     const isProductAvailbleInUsersCart = await getSingleData(Cart, {
         "productDetails._id": productId,
-        orderStatus: 'pendingPurchase',
+        orderStatus: PENDING_PURCHASE,
         userId: user
     })
     if (isProductAvailbleInUsersCart.status) {
@@ -42,10 +44,28 @@ const addToCartService = async (productId, route, user, method, accountType) => 
             userId: user
         })
     }
+    if (!result.status) {
+        generateLog(route, user, method, accountType, UNSUCCESSFUL_MESSAGE)
+        return { statusCode: 400, payload: UNSUCCESSFUL_MESSAGE };
+    }
     generateLog(route, user, method, accountType, SUCCESS_MESSAGE)
     return { statusCode: 200, payload: SUCCESS_MESSAGE };
 }
-
+/*
+ * @param { route, user, method, accountType} string,string,string,string
+ * @return{status,payload} statuscode,object||string
+ * @desc  get all  cart items with pendingPurchaseStatus
+ */
+const getAllCartItemsService = async (route, user, method, accountType) => {
+    // get all cartitems with pending purchase
+    const result = await getAllDataByCondition(Cart, { userId: user, orderStatus: PENDING_PURCHASE })
+    if (!result.status) {
+        generateLog(route, user, method, accountType, UNSUCCESSFUL_MESSAGE)
+        return { statusCode: 400, payload: UNSUCCESSFUL_MESSAGE };
+    }
+    generateLog(route, user, method, accountType, SUCCESS_MESSAGE)
+    return { statusCode: 200, payload: result.data };
+}
 
 
 /*
@@ -54,31 +74,44 @@ const addToCartService = async (productId, route, user, method, accountType) => 
  * @desc  buy cart items
  */
 const buyCartItemsService = async (route, user, method, accountType) => {
-    // get all cartitems with pending purchase
-    const AllCartData = await getAllDataByCondition(Cart, { userId: user, orderStatus: 'pendingPurchase' })
-    // recheck all data for stocks
-    const productArray = []
-    for (let cartData of AllCartData.data) {
-        const productData = await getSingleDataById(Product, cartData.productDetails._id)
-        if (productData.data.quantityAvailable < cartData.productDetails.quantity) {
-            productArray.push(productData.data.productName)
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        // get all cartitems with pending purchase
+        const AllCartData = await getAllDataByCondition(Cart, { userId: user, orderStatus: PENDING_PURCHASE })
+        // recheck all data for stocks
+        const productArray = []
+        for (let cartData of AllCartData.data) {
+            const productData = await getSingleDataById(Product, cartData.productDetails._id)
+            if (productData.data.quantityAvailable < cartData.productDetails.quantity) {
+                productArray.push(productData.data.productName)
+            }
         }
-    }
-    // generate errorr message if any product out of stock
-    if (productArray.length > 0) {
-        generateLog(route, user, method, accountType, JSON.stringify({ payload: { productList: productArray }, message: PRODUCT_OUT_OF_STOCK }))
-        return {
-            statusCode: 403, payload: { productList: productArray, message: PRODUCT_OUT_OF_STOCK },
-        };
-    } else {
-        //complete purchase
-        const result = await updateManyData(Cart,
-            { userId: user, orderStatus: 'pendingPurchase' },
-            { orderStatus: "purchaseCompleted" },
-        )
-        generateLog(route, user, method, accountType, SUCCESS_MESSAGE)
-        return { statusCode: 200, payload: SUCCESS_MESSAGE, }
+        // generate errorr message if any product out of stock
+        if (productArray.length > 0) {
+            generateLog(route, user, method, accountType, JSON.stringify({ payload: { productList: productArray }, message: PRODUCT_OUT_OF_STOCK }))
+            return {
+                statusCode: 403, payload: { productList: productArray, message: PRODUCT_OUT_OF_STOCK },
+            };
+        } else {
+            //complete purchase
+            const result = await updateManyData(Cart,
+                { userId: user, orderStatus: PENDING_PURCHASE },
+                { orderStatus: COMPLETED_PURCHASE },
+                { session }
+
+            )
+            await session.commitTransaction();
+            session.endSession();
+            generateLog(route, user, method, accountType, SUCCESS_MESSAGE)
+            return { statusCode: 200, payload: SUCCESS_MESSAGE, }
+        }
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
     }
 }
 
-module.exports = { addToCartService, buyCartItemsService }
+module.exports = { addToCartService, buyCartItemsService, getAllCartItemsService }

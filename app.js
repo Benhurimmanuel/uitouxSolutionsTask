@@ -1,15 +1,13 @@
 require('dotenv').config();
 const express = require('express');
-
-
 const cors = require('cors');
-
-// const { errorHandler } = require('./HELPERS/ERROR_HANDLERS/generalErrors');
 const v1Routes = require('./API/V1');
 const { connectDb } = require('./DB/connect');
 const { errorHandler } = require('./HELPERS/ERROR_HANDLERS');
+const logger = require('./HELPERS/LOGGER');
 
 const app = express();
+// db connect
 connectDb();
 
 // cors
@@ -35,8 +33,8 @@ app.use(errorHandler);
 
 // server
 app.listen(process.env.SERVER_PORT || 4000, () => {
-    // logger.info(`App running on port ${process.env.SERVER_PORT}`);
-    console.log(`running in ${process.env.SERVER_PORT}`);
+    logger.info(`App running on port ${process.env.SERVER_PORT}`);
+    console.log(`App running on port ${process.env.SERVER_PORT}`);
 });
 
 

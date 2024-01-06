@@ -6,6 +6,7 @@ const { User } = require("../../../../../DB/SCHEMA/user");
 const { USER_ACCOUNT, ADMIN_ACCOUNT } = require("../../../CONSTANTS/variables");
 const { generateLog } = require("../../../UTILS/loggerUtils");
 const { Admin } = require("../../../../../DB/SCHEMA/admin");
+const { signUpSchema, signInSchema } = require("../../../../../HELPERS/VALIDATIONS");
 
 
 
@@ -15,6 +16,7 @@ const { Admin } = require("../../../../../DB/SCHEMA/admin");
  * @desc  signup new user and generate login token
  */
 const userSignUpService = async (fullName, email, password, route, user, method, accountType,) => {
+    await signUpSchema.validateAsync({ fullName, email, password });
 
     // check if user exit
     const isUserAvailable = await getSingleData(User, { email: email.toLowerCase() })
@@ -49,6 +51,8 @@ const userSignUpService = async (fullName, email, password, route, user, method,
  * @desc  signin existing user and generate login token
  */
 const userSignInService = async (email, password, route, user, method, accountType,) => {
+    await signInSchema.validateAsync({ email, password });
+
     const isUserAvailable = await getSingleData(User, { email: email.toLowerCase() })
     //checking if user available
     if (!isUserAvailable.status) {
@@ -80,6 +84,8 @@ const userSignInService = async (email, password, route, user, method, accountTy
  */
 const adminSignUpService = async (fullName, email, password, route, user, method, accountType,) => {
     // check if user exit
+    await signUpSchema.validateAsync(fullName, email, password);
+
     const isUserAvailable = await getSingleData(Admin, { email: email.toLowerCase(), })
     if (isUserAvailable.status) {
         generateLog(route, user, method, accountType, EMAIL_ALREADY_EXISITING)
@@ -111,6 +117,8 @@ const adminSignUpService = async (fullName, email, password, route, user, method
  * @desc  signin existing admin and generate login token
  */
 const adminSignInService = async (email, password, route, user, method, accountType,) => {
+    await signInSchema.validateAsync({ email, password });
+
     const isUserAvailable = await getSingleData(Admin, { email: email.toLowerCase(), })
     //checking if user available
     if (!isUserAvailable.status) {
