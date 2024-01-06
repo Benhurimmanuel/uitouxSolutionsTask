@@ -1,8 +1,16 @@
 const express = require('express');
 const { createCategoryController, getCategoryListController } = require('../MODULES/CATEGORIES/CONTROLLERS');
-const { createProductController, getProductListofSingleCategoryController, getSingleProductController } = require('../MODULES/PRODUCTS/CONTROLLERS');
+const { createProductController, getProductListofSingleCategoryController, getSingleProductController, getProductRecommendationsByTagsController } = require('../MODULES/PRODUCTS/CONTROLLERS');
+const { createAdsController, getAdsListController } = require('../MODULES/ADS/CONTROLLERS');
 
 const router = express.Router();
+
+//ads
+router.route('/ads/create').post(createAdsController);
+router.route('/ads/getall').get(getAdsListController);
+
+
+
 
 // categories
 router.route('/categories/create').post(createCategoryController);

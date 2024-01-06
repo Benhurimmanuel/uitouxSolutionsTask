@@ -11,12 +11,13 @@ const { signUpSchema, signInSchema } = require("../../../../../HELPERS/VALIDATIO
 
 
 /*
- * @param {fullName, email, password, user, method, accountType, route} string,string,string,string,string,string
+ * @param {signUpData, user, method, accountType, route} Object,string,string,string,string
  * @return{status,payload} statuscode,object||string
  * @desc  signup new user and generate login token
  */
-const userSignUpService = async (fullName, email, password, route, user, method, accountType,) => {
-    await signUpSchema.validateAsync({ fullName, email, password });
+const userSignUpService = async (signUpData, route, user, method, accountType,) => {
+    await signUpSchema.validateAsync({ ...signUpData });
+    const { fullName, email, password } = signUpData
 
     // check if user exit
     const isUserAvailable = await getSingleData(User, { email: email.toLowerCase() })
@@ -46,12 +47,13 @@ const userSignUpService = async (fullName, email, password, route, user, method,
 }
 
 /*
- * @param { email, password, user, method, accountType, route} string,string,string,string,string
+ * @param { signInData user, method, accountType, route} Object,string,string,string,string
  * @return{status,payload} statuscode,object||string
  * @desc  signin existing user and generate login token
  */
-const userSignInService = async (email, password, route, user, method, accountType,) => {
-    await signInSchema.validateAsync({ email, password });
+const userSignInService = async (signInData, route, user, method, accountType,) => {
+    await signInSchema.validateAsync({ ...signInData });
+    const { email, password } = signInData
 
     const isUserAvailable = await getSingleData(User, { email: email.toLowerCase() })
     //checking if user available
@@ -78,14 +80,14 @@ const userSignInService = async (email, password, route, user, method, accountTy
 }
 
 /*
- * @param {fullName, email, password, user, method, accountType, route} string,string,string,string,string,string
+ * @param {signUpData, user, method, accountType, route} Object,string,string,string,string
  * @return{status,payload} statuscode,object||string
  * @desc  signup new admin and generate login token
  */
-const adminSignUpService = async (fullName, email, password, route, user, method, accountType,) => {
+const adminSignUpService = async (signUpData, route, user, method, accountType,) => {
     // check if user exit
-    await signUpSchema.validateAsync(fullName, email, password);
-
+    await signUpSchema.validateAsync({ ...signUpData });
+    const { fullName, email, password } = signUpData
     const isUserAvailable = await getSingleData(Admin, { email: email.toLowerCase(), })
     if (isUserAvailable.status) {
         generateLog(route, user, method, accountType, EMAIL_ALREADY_EXISITING)
@@ -112,12 +114,14 @@ const adminSignUpService = async (fullName, email, password, route, user, method
 }
 
 /*
- * @param { email, password, user, method, accountType, route} string,string,string,string,string
+ * @param { signInData, user, method, accountType, route} Object,string,string,string,string
  * @return{status,payload} statuscode,object||string
  * @desc  signin existing admin and generate login token
  */
-const adminSignInService = async (email, password, route, user, method, accountType,) => {
-    await signInSchema.validateAsync({ email, password });
+const adminSignInService = async (signInData, route, user, method, accountType,) => {
+    await signInSchema.validateAsync({ ...signInData });
+    const { email, password } = signInData
+
 
     const isUserAvailable = await getSingleData(Admin, { email: email.toLowerCase(), })
     //checking if user available

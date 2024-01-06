@@ -18,6 +18,7 @@ const productSchema = new mongoose.Schema({
     },
     averageRating: { type: Number, default: 0 },
     quantityAvailable: { type: Number, required: true },
+    tags: { type: Array, required: true },
 
 });
 

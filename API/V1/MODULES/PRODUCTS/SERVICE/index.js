@@ -45,13 +45,13 @@ const createProductService = async (categoryId, productPayload, route, user, met
  * @param {categoryId, route, user, method, accountType} string,string,string,string,string
  * @return{status,payload} statuscode,object||string
  * @desc  get list of all prodcuts belonging to single category
- */const getProductListofSingleCategoryService = async (categoryId, route, user, method, accountType) => {
+ */const getProductListofSingleCategoryService = async (categoryId, pageSize, pageNumber, route, user, method, accountType) => {
     const isCategoryPresent = await getSingleDataById(Category, categoryId)
     if (!isCategoryPresent.status) {
         generateLog(route, user, method, accountType, CATEGORY_NON_EXISTANT)
         return { statusCode: 403, payload: CATEGORY_NON_EXISTANT };
     }
-    const result = await getAllDataByCondition(Product, { "categoryDetails._id": categoryId })
+    const result = await getAllDataByCondition(Product, { "categoryDetails._id": categoryId }, pageSize, pageNumber)
     if (!result.status) {
         generateLog(route, user, method, accountType, UNSUCCESSFUL_MESSAGE)
         return { statusCode: 400, payload: UNSUCCESSFUL_MESSAGE };
@@ -79,7 +79,24 @@ const getSingleProductService = async (productId, route, user, method, accountTy
     return { statusCode: 201, payload: productDetails.data };
 }
 
+/*
+ * @param {tag, pageSize, pageNumber,, route, user, method, accountType} string,string,string,string,string,string,string
+ * @return{status,payload} statuscode,object||string
+ * @desc  get all products which has a certain tag in it (used for recommendataions)
+ */
+const getProductRecommendationsByTagsService = async (tag, pageSize, pageNumber, route, user, method, accountType) => {
+    const productDetails = await getAllDataByCondition(Product, { tags: { $in: [tag] } }, pageSize, pageNumber)
+    if (!productDetails.status) {
+        generateLog(route, user, method, accountType, UNSUCCESSFUL_MESSAGE)
+        return { statusCode: 400, payload: UNSUCCESSFUL_MESSAGE };
+    }
+
+    generateLog(route, user, method, accountType, JSON.stringify(productDetails.data))
+    return { statusCode: 200, payload: productDetails.data };
+}
+
+
 
 module.exports = {
-    createProductService, getProductListofSingleCategoryService, getSingleProductService
+    createProductService, getProductListofSingleCategoryService, getSingleProductService, getProductRecommendationsByTagsService
 }

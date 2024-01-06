@@ -36,8 +36,8 @@ const createCategoryService = async (categoryPayload, route, user, method, accou
  * @return{status,payload} statuscode,object||string
  * @desc  get list of all categories
  */
-const getCategoryListService = async (route, user, method, accountType) => {
-    const result = await getAllDataByCondition(Category, {})
+const getCategoryListService = async (pageSize, pageNumber, route, user, method, accountType) => {
+    const result = await getAllDataByCondition(Category, {}, pageSize, pageNumber)
     if (!result.status) {
         generateLog(route, user, method, accountType, UNSUCCESSFUL_MESSAGE)
         return { statusCode: 403, payload: UNSUCCESSFUL_MESSAGE };

@@ -40,9 +40,21 @@ const getSingleDataById = async (collectionName, condition = null) => {
 
 
 
-const getAllDataByCondition = async (collectionName, condition = null) => {
+const getAllDataByCondition = async (collectionName, condition = null, pageSize = 1, pageNumber = 0) => {
   try {
-    const payload = await collectionName.find(condition);
+    const skipAmount = pageNumber * pageSize
+    const payload = await collectionName.find(condition).skip(skipAmount).limit(pageSize).exec();
+    if (!payload) return { status: false, data: null }
+    return { status: true, data: payload }
+  } catch (error) {
+    return { status: false, data: error.message };
+  }
+};
+
+
+const getAllDataByConditionWOPagenation = async (collectionName, condition = null,) => {
+  try {
+    const payload = await collectionName.find(condition)
     if (!payload) return { status: false, data: null }
     return { status: true, data: payload }
   } catch (error) {
@@ -78,5 +90,5 @@ const updateManyData = async (collectionName, condition, updateValue) => {
 
 
 module.exports = {
-  addData, getSingleData, getSingleDataById, getAllDataByCondition, updateSingleData, updateManyData
+  addData, getSingleData, getSingleDataById, getAllDataByCondition, getAllDataByConditionWOPagenation, updateSingleData, updateManyData
 }

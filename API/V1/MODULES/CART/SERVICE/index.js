@@ -1,7 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const { Cart } = require("../../../../../DB/SCHEMA/cart");
 const { Product } = require("../../../../../DB/SCHEMA/product");
-const { getSingleData, addData, getAllDataByCondition, getSingleDataById, updateSingleData, updateManyData, } = require("../../../../../DB/wrapper");
+const { getSingleData, addData, getAllDataByCondition, getSingleDataById, updateSingleData, updateManyData, getAllDataByConditionWOPagenation, } = require("../../../../../DB/wrapper");
 const { SUCCESS_MESSAGE, PRODUCT_UNAVAILABLE, PRODUCT_OUT_OF_STOCK, UNSUCCESSFUL_MESSAGE } = require("../../../CONSTANTS/httpConstants");
 const { PENDING_PURCHASE, COMPLETED_PURCHASE } = require("../../../CONSTANTS/variables");
 const { generateLog } = require("../../../UTILS/loggerUtils");
@@ -56,9 +56,9 @@ const addToCartService = async (productId, route, user, method, accountType) => 
  * @return{status,payload} statuscode,object||string
  * @desc  get all  cart items with pendingPurchaseStatus
  */
-const getAllCartItemsService = async (route, user, method, accountType) => {
+const getAllCartItemsService = async (pageSize, pageNumber, route, user, method, accountType) => {
     // get all cartitems with pending purchase
-    const result = await getAllDataByCondition(Cart, { userId: user, orderStatus: PENDING_PURCHASE })
+    const result = await getAllDataByCondition(Cart, { userId: user, orderStatus: PENDING_PURCHASE }, pageSize, pageNumber,)
     if (!result.status) {
         generateLog(route, user, method, accountType, UNSUCCESSFUL_MESSAGE)
         return { statusCode: 400, payload: UNSUCCESSFUL_MESSAGE };
@@ -80,7 +80,7 @@ const buyCartItemsService = async (route, user, method, accountType) => {
 
     try {
         // get all cartitems with pending purchase
-        const AllCartData = await getAllDataByCondition(Cart, { userId: user, orderStatus: PENDING_PURCHASE })
+        const AllCartData = await getAllDataByConditionWOPagenation(Cart, { userId: user, orderStatus: PENDING_PURCHASE })
         // recheck all data for stocks
         const productArray = []
         for (let cartData of AllCartData.data) {

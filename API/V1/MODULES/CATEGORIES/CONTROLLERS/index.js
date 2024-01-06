@@ -16,8 +16,8 @@ const getCategoryListController = async (req, res, next) => {
     try {
         const { user, accountType, method } = req;
         const route = req.originalUrl;
-        const categoryPayload = req.body
-        const { statusCode, payload } = await getCategoryListService(categoryPayload, route, user, method, accountType);
+        const { pageSize, pageNumber } = req.query
+        const { statusCode, payload } = await getCategoryListService(pageSize, pageNumber, route, user, method, accountType);
         res.status(statusCode).send({ payload });
     } catch (error) {
         next(error);

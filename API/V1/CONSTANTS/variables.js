@@ -1,5 +1,5 @@
-SIGN_UP = "signUp"
-SIGN_IN = "signIn"
+const SIGN_UP = "signUp"
+const SIGN_IN = "signIn"
 const USER_ACCOUNT = 'User'
 const ADMIN_ACCOUNT = 'admin'
 const PENDING_PURCHASE = 'pendingPurchase'

@@ -2,9 +2,7 @@
 const mongoose = require('mongoose');
 // const logger = require('../HELPERS/LOGGER');
 
-const connectDb = () => mongoose.connect(process.env.MONGODB_URL, {
-    useNewUrlParser: true, useUnifiedTopology: true,
-})
+const connectDb = () => mongoose.connect(process.env.MONGODB_URL,)
     .then((data) => {
         console.log('Connected to database...');
         return true;
