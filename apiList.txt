@@ -1,0 +1,15 @@
+un protected Routes :
+api/v1/common/sigin
+api/v1/common/categories
+api/v1/common/categories/{categoryid}/productlist
+api/v1/common/products
+api/v1/common/products/{productid}/details
+api/v1/common/
+
+
+
+protectedRoutes
+api/v1/users/profile
+api/v1/users/mycart
+api/v1/users/products/{productid}/addtocart
+api/v1/users/orders/{orderid}/buy
